@@ -1,9 +1,13 @@
 import os
+import sys
+import logging
 from flask import Flask, jsonify
 from flasgger import Swagger
 from models import db
 from auth import auth_bp
 from reports import reports_bp
+from health import health_bp
+from metrics import metrics_bp
 
 DB_URI = os.environ.get('DB_URI', 'localhost:8432')
 DB_USER = os.environ.get('DB_USER', 'dbuser')
@@ -13,9 +17,15 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_URI}/workclock-db'
 app.register_blueprint(auth_bp)
 app.register_blueprint(reports_bp)
+app.register_blueprint(health_bp)
+app.register_blueprint(metrics_bp)
 
 swagger = Swagger(app)
 db.init_app(app)
+
+log_level = logging.DEBUG if app.debug else logging.INFO
+logging.basicConfig(level=log_level, stream=sys.stdout)
+logger = logging.getLogger(__name__)
 
 @app.route('/heartbeat')
 def heartbeat():
