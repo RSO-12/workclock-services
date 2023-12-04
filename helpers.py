@@ -7,9 +7,10 @@ from models import User
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default_value')
 
-def generate_token(user_id, expiration_minutes=60 * 8):
+def generate_token(user_id, is_admin, expiration_minutes=60 * 8):
     payload = {
         'user_id': user_id,
+        'is_admin': is_admin,
         'exp': datetime.utcnow() + timedelta(minutes=expiration_minutes)
     }
 
@@ -29,10 +30,8 @@ def validate_token(admin_req=False):
                 jwt_token = token[7:]
                 payload = jwt.decode(jwt_token, JWT_SECRET, algorithms=['HS256'])
                 user_id = payload.get('user_id')
-                if admin_req:
-                    user = User.query.filter_by(id=user_id).first()
-                    if not user or not user.is_admin:
-                        return jsonify({'message': 'Admin required for this action'}), 403
+                if admin_req and not payload.get('is_admin'):
+                    return jsonify({'message': 'Admin required for this action'}), 403
 
                 return f(user_id, *args, **kwargs)
             except jwt.ExpiredSignatureError:

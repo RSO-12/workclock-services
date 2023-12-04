@@ -7,4 +7,5 @@ reports_bp = Blueprint('reports', __name__, url_prefix='/v1/reports/')
 @validate_token()
 def monthly_events(user_id):
     return jsonify({'message': 'ok', 'user_id': user_id}), 200
+
     
