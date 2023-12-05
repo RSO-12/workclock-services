@@ -1,20 +1,16 @@
-import os
 import sys
 import logging
-from flask import Flask, jsonify
+from flask import Flask
 from flasgger import Swagger
 from core.models import db
+from core.config import *
 from services.auth import auth_bp
 from services.reports import reports_bp
 from services.health import health_bp
 from services.metrics import metrics_bp
 
-DB_URI = os.environ.get('DB_URI', 'localhost:8432')
-DB_USER = os.environ.get('DB_USER', 'dbuser')
-DB_PASSWORD = os.environ.get('DB_PASSWORD', 'postgres')
-
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_URI}/workclock-db'
+app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_URI}/{DB_NAME}'
 app.register_blueprint(auth_bp)
 app.register_blueprint(reports_bp)
 app.register_blueprint(health_bp)

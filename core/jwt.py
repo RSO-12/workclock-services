@@ -1,10 +1,9 @@
 import jwt
-import os
 from datetime import datetime, timedelta
 from flask import jsonify, request
 from functools import wraps
+from core.config import *
 
-JWT_SECRET = os.environ.get('JWT_SECRET', 'default_value')
 
 def generate_token(user_id, is_admin, expiration_minutes=60 * 8):
     payload = {
@@ -16,8 +15,8 @@ def generate_token(user_id, is_admin, expiration_minutes=60 * 8):
     token = jwt.encode(payload, JWT_SECRET, algorithm='HS256')
     return token
 
-def validate_token(admin_req=False):
 
+def validate_token(admin_req=False):
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
@@ -39,4 +38,5 @@ def validate_token(admin_req=False):
                 return jsonify({'message': 'Invalid token'}), 401
 
         return wrapper
+
     return decorator

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from core.helpers import validate_token
+from core.jwt import validate_token
 from flasgger import swag_from
 
 reports_bp = Blueprint('reports', __name__, url_prefix='/v1/reports/')

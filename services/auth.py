@@ -3,7 +3,7 @@ from flasgger import swag_from
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from core.models import db, User, bcrypt
-from core.helpers import generate_token, validate_token
+from core.jwt import generate_token, validate_token
 
 auth_bp = Blueprint('auth', __name__, url_prefix="/v1/auth")
 
