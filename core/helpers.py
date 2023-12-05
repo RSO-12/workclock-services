@@ -3,7 +3,6 @@ import os
 from datetime import datetime, timedelta
 from flask import jsonify, request
 from functools import wraps
-from models import User
 
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default_value')
 
