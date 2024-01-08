@@ -79,7 +79,7 @@ def login():
         user = User.query.filter_by(gmail=gmail).first()
         if user and bcrypt.check_password_hash(user.password, password):
             token = generate_token(user.id, user.is_admin)
-            return jsonify({'message': 'Login successful', 'token': token})
+            return jsonify({'message': 'Login successful', 'token': token, 'is_admin': user.is_admin})
         else:
             return jsonify({'message': 'Invalid password'}), 401
     except NoResultFound:
