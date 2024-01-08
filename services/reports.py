@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, send_file
 from core.jwt import validate_token
 from flasgger import swag_from
+import pdfkit
 
 reports_bp = Blueprint('reports', __name__, url_prefix='/v1/reports/')
 
@@ -40,6 +41,35 @@ reports_bp = Blueprint('reports', __name__, url_prefix='/v1/reports/')
     }
 })
 def monthly_events(user_id):
-    return jsonify({'message': 'ok', 'user_id': user_id}), 200
+    data = [
+        {"name": "John", "surname": "Test"},
+        # Add more data here
+    ]
+
+    # Generate HTML table from the data
+    html = '<table border="1"><tr><th>Name</th><th>Surname</th></tr>'
+    for entry in data:
+        html += f'<tr><td>{entry["name"]}</td><td>{entry["surname"]}</td></tr>'
+    html += '</table>'
+
+    # Generate PDF using pdfkit
+    pdf = pdfkit.from_string(html, False)
+
+    # Set the file name
+    pdf_file_path = 'generated_pdf.pdf'
+
+    # Save the PDF file
+    with open(pdf_file_path, 'wb') as f:
+        f.write(pdf)
+
+    # Return the PDF file for download
+    return send_file(pdf_file_path, as_attachment=True)
+
+
+@reports_bp.route('/get_pdf')
+def get_pdf():
+    # Return the generated PDF file
+    pdf_file_path = 'generated_pdf.pdf'
+    return send_file(pdf_file_path, as_attachment=True)
 
     
