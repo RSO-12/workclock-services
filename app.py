@@ -43,10 +43,6 @@ def after_request(response):
 swagger = Swagger(app)
 db.init_app(app)
 
-log_level = logging.DEBUG if app.debug else logging.INFO
-logging.basicConfig(level=log_level, stream=sys.stdout)
-logger = logging.getLogger(__name__)
-
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
     #with app.app_context():

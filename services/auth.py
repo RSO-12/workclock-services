@@ -4,6 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from core.models import db, User, bcrypt
 from core.jwt import generate_token, validate_token
+from core.logger import logger
 
 auth_bp = Blueprint('auth', __name__, url_prefix="/v1/auth")
 
@@ -79,8 +80,10 @@ def login():
         user = User.query.filter_by(gmail=gmail).first()
         if user and bcrypt.check_password_hash(user.password, password):
             token = generate_token(user.id, user.is_admin)
+            logger.info(f'User login success {gmail}')
             return jsonify({'message': 'Login successful', 'token': token, 'is_admin': user.is_admin})
         else:
+            logger.error(f'Login with gmail {gmail} failed!')
             return jsonify({'message': 'Invalid password'}), 401
     except NoResultFound:
         return jsonify({'message': 'User not found'}), 401
