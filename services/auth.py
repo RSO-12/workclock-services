@@ -127,6 +127,7 @@ def profile(user_id):
     user.gmail = data.get('gmail', user.gmail)
     hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8') if data.get('password') else user.password
     user.password = hashed_password
+    logger.info(f'User {user.id} was updated with data name: {user.name}, gmail: {user.gmail}')
 
     try:
         db.session.commit()
@@ -149,5 +150,6 @@ def profile(user_id):
 })
 def all(_):
     users = User.query.all()
+    logger.info(f'All users were fetched count: {len(users)}')
     return jsonify({'users': [{'id': u.id, 'name': u.name, 'gmail': u.gmail,
                                'is_admin': u.is_admin, 'created_by': u.created_by} for u in users]}), 200
