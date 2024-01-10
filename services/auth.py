@@ -3,7 +3,7 @@ from flasgger import swag_from
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from core.models import db, User, bcrypt
-from core.jwt import generate_token, validate_token
+from core.token import generate_token, validate_token
 from core.mailer import send_email
 from core.logger import logger
 from core.util import generate_random_pass

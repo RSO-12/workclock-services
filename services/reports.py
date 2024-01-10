@@ -1,8 +1,7 @@
 from flask import Blueprint, send_file
-from datetime import datetime
 from collections import defaultdict
 from core.models import Event, EventType
-from core.jwt import validate_token
+from core.token import validate_token
 from core.util import get_first_day_of_month
 from flasgger import swag_from
 import pdfkit
@@ -42,16 +41,21 @@ def monthly_events(user_id):
         Event.user_id == user_id
     ).all()
 
+    event_types = EventType.query.all()
+    event_types_grouped = {et.id: et.title for et in event_types}
+
     html = '''
         <h1>Monthly events</h1>
         <table style="width: 100%; border-collapse: collapse; border: 1px solid black;">
         <tr>
+            <th style="border: 1px solid black;">Event type</th>
             <th style="border: 1px solid black;">Start</th>
             <th style="border: 1px solid black;">End</th>
         </tr>'''
 
     for event in events:
         html += f'''<tr>
+            <td style="border: 1px solid black;">&nbsp;&nbsp;{event_types_grouped[event.event_type_id]}</td>
             <td style="border: 1px solid black;">&nbsp;&nbsp;{event.start_date.strftime("%d/%m/%Y %H:%M")}</td>
             <td style="border: 1px solid black;">&nbsp;&nbsp;{event.end_date.strftime("%d/%m/%Y %H:%M")}</td>
         </tr>'''
@@ -67,7 +71,7 @@ def monthly_events(user_id):
 @reports_bp.route('/grouped-monthly-events', methods=['GET'])
 @validate_token()
 @swag_from({
-    'summary': 'Endpoint for fetching grouped monthly events.',
+    'summary': 'Endpoint for fetching grouped monthly events as PDF file.',
     'description': 'Fetches and groups monthly events by event type, calculating total work hours.',
     'parameters': [
         {
