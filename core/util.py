@@ -1,6 +1,7 @@
 from prometheus_client import Counter, Histogram, Summary
 from flask import request, jsonify
 from core.logger import logger
+from datetime import datetime
 import time
 import requests
 import random
@@ -44,4 +45,9 @@ def generate_random_pass():
     else:
         return "super_safe_password_placeholder"
 
+
+def get_first_day_of_month():
+    current_date = datetime.now()
+    return current_date.replace(year=2020, day=1, hour=0,
+                                minute=0, second=0, microsecond=0)
 
