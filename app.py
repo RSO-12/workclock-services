@@ -9,8 +9,11 @@ from services.health import health_bp
 from services.metrics import metrics_bp
 from services.mock import mock_bp
 from services.fault_demo import fault_demo_bp
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_URI}/{DB_NAME}'
 app.register_blueprint(auth_bp)
 app.register_blueprint(reports_bp)
