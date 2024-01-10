@@ -34,6 +34,11 @@ def handle_error(e):
     return jsonify({'error': 'Something went wrong'}), 500
 
 
+def handle_service_unavailable():
+    logger.error("Service currently not available")
+    return jsonify({'error': 'Service currently not available'}), 503
+
+
 def generate_random_pass():
     url = 'https://gist.githubusercontent.com/borlaym/585e2e09dd6abd9b0d0a/raw/6e46db8f5c27cb18fd1dfa50c7c921a0fbacbad0/animals.json'
     response = requests.get(url)

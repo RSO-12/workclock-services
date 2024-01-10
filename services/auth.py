@@ -5,14 +5,17 @@ from sqlalchemy.orm.exc import NoResultFound
 from core.models import db, User, bcrypt
 from core.token import generate_token, validate_token
 from core.mailer import send_email
+from circuitbreaker import circuit
 from core.logger import logger
-from core.util import generate_random_pass
+from core.util import generate_random_pass, handle_service_unavailable
 
 auth_bp = Blueprint('auth', __name__, url_prefix="/v1/auth")
 
 
 @auth_bp.route('/register', methods=['POST'])
 @validate_token(admin_req=True)
+@circuit(failure_threshold=2, expected_exception=Exception,
+         recovery_timeout=60, fallback_function=handle_service_unavailable)
 @swag_from({
     'summary': 'Endpoint for user registration.',
     'description': 'Register a new user with required details.',
