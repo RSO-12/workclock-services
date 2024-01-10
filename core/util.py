@@ -2,15 +2,19 @@ from prometheus_client import Counter, Histogram, Summary
 from flask import request, jsonify
 from core.logger import logger
 import time
+import requests
+import random
 
 by_path_counter = Counter('by_path_counter', 'Request count by request paths', ['path'])
 response_code_counter = Counter('response_code_counter', 'Count of HTTP response codes', ['status_code'])
 request_duration_histogram = Histogram('request_duration_seconds', 'Request duration in seconds', ['path'])
 request_size_summary = Summary('request_size_bytes', 'Request size in bytes')
 
+
 def before_request():
     if '/metrics' not in request.path:
         request.start_time = time.time()
+
 
 def after_request(response):
     if '/metrics' not in request.path:
@@ -23,6 +27,21 @@ def after_request(response):
 
     return response
 
+
 def handle_error(e):
     logger.error(f"An error occurred: {e}")
     return jsonify({'error': 'Something went wrong'}), 500
+
+
+def generate_random_pass():
+    url = 'https://gist.githubusercontent.com/borlaym/585e2e09dd6abd9b0d0a/raw/6e46db8f5c27cb18fd1dfa50c7c921a0fbacbad0/animals.json'
+    response = requests.get(url)
+    if response.status_code == 200:
+        data = response.json()
+        selected_strings = random.sample(data, 3)
+        joined_string = ''.join(selected_strings).replace(" ", "")
+        return joined_string
+    else:
+        return "super_safe_password_placeholder"
+
+

@@ -4,9 +4,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from core.models import db, User, bcrypt
 from core.jwt import generate_token, validate_token
+from core.mailer import send_email
 from core.logger import logger
+from core.util import generate_random_pass
 
 auth_bp = Blueprint('auth', __name__, url_prefix="/v1/auth")
+
 
 @auth_bp.route('/register', methods=['POST'])
 @validate_token(admin_req=True)
@@ -26,11 +29,11 @@ def register(user_id):
     data = request.get_json()
     name = data.get('name')
     gmail = data.get('gmail')
-    password = data.get('password')
+    password = generate_random_pass()
     is_admin = data.get('is_admin', False)
 
-    if any(field is None for field in [name, gmail, password, is_admin, user_id]):
-        return jsonify({'message': f'Name, Gmail and Password are required'}), 400
+    if any(field is None for field in [name, gmail, is_admin, user_id]):
+        return jsonify({'message': f'Name, Gmail are required'}), 400
 
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     new_user = User(name=name, gmail=gmail, is_admin=is_admin,
@@ -39,10 +42,12 @@ def register(user_id):
     try:
         db.session.add(new_user)
         db.session.commit()
+        # send_email(gmail, 'Welcome to WorkClock', f'Hi {gmail},\n\nWelcome to WorkClock!\nYour password is {password}\n\nRegards,\nWorkClock team')
         return jsonify({'message': 'User registered successfully'}), 201
     except IntegrityError:
         db.session.rollback()
         return jsonify({'message': 'gmail already exists'}), 400
+
 
 @auth_bp.route('/login', methods=['POST'])
 @swag_from({
@@ -87,6 +92,7 @@ def login():
             return jsonify({'message': 'Invalid password'}), 401
     except NoResultFound:
         return jsonify({'message': 'User not found'}), 401
+
 
 @auth_bp.route('/profile', methods=['GET', 'POST'])
 @validate_token()
@@ -133,6 +139,7 @@ def profile(user_id):
         db.session.commit()
         return jsonify({'message': 'User update success'}), 200
     except Exception as ex:
+        logger.error(str(ex))
         db.session.rollback()
         return jsonify({'message': 'Error occurred while updating'}), 400
 
@@ -148,8 +155,43 @@ def profile(user_id):
         }
     }
 })
-def all(_):
+def get_all(_):
     users = User.query.all()
     logger.info(f'All users were fetched count: {len(users)}')
     return jsonify({'users': [{'id': u.id, 'name': u.name, 'gmail': u.gmail,
                                'is_admin': u.is_admin, 'created_by': u.created_by} for u in users]}), 200
+
+
+@auth_bp.route('/remove-user', methods=['DELETE'])
+@validate_token(admin_req=True)
+@swag_from({
+    'summary': 'Endpoint to remove a user.',
+    'description': 'Delete an existing user by user_id.',
+    'responses': {
+        200: {
+            'description': 'User deleted successfully.'
+        },
+        400: {
+            'description': 'Invalid user_id or deletion failed.'
+        }
+    }
+})
+def remove_user():
+    data = request.get_json()
+    user_id = data.get('user_id')
+
+    if user_id is None:
+        return jsonify({'message': 'User ID is required'}), 400
+
+    user_to_delete = User.query.get(user_id)
+    if user_to_delete:
+        try:
+            db.session.delete(user_to_delete)
+            db.session.commit()
+            return jsonify({'message': 'User deleted successfully'}), 200
+        except Exception as e:
+            logger.error(str(e))
+            db.session.rollback()
+            return jsonify({'message': 'Deletion failed'}), 400
+    else:
+        return jsonify({'message': 'Invalid user ID'}), 400
