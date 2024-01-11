@@ -50,6 +50,7 @@ def register(user_id):
             'Welcome to WorkClock',
             f'Hi {gmail},\n\nWelcome to WorkClock!\nYour password is {password}\n\nRegards,\nWorkClock team'
         )
+        logger.info(f'User {gmail} was registered successfully - pass: {password}')
         return jsonify({'message': 'User registered successfully'}), 201
     except IntegrityError:
         db.session.rollback()
