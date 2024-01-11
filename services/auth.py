@@ -184,8 +184,7 @@ def get_all(_):
     }
 })
 def remove_user(_):
-    data = request.get_json()
-    user_id = data.get('user_id')
+    user_id = request.args.get('id')
 
     if user_id is None:
         return jsonify({'message': 'User ID is required'}), 400
