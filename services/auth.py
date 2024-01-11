@@ -198,3 +198,60 @@ def remove_user():
             return jsonify({'message': 'Deletion failed'}), 400
     else:
         return jsonify({'message': 'Invalid user ID'}), 400
+
+
+
+@auth_bp.route('/user', methods=['GET', 'POST'])
+@validate_token(admin_req=True)
+@swag_from({
+    'summary': 'Endpoint for user profile management (Admins).',
+    'description': 'View or update user profile details.',
+    'parameters': [
+        {
+            'name': 'id',
+            'in': 'path',
+            'type': 'integer',
+            'required': True,
+            'description': 'ID of the authenticated user'
+        },
+    ],
+    'responses': {
+        200: {
+            'description': 'User details retrieved successfully or updated successfully.'
+        },
+        400: {
+            'description': 'Error occurred while updating user details.'
+        },
+        404: {
+            'description': 'User not found.'
+        }
+    }
+})
+def admin_user_action(_):
+    user_id = request.args.get('id')
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({'message': 'User not found'}), 404
+
+    if request.method == 'GET':
+        return jsonify({'id': user.id, 'gmail': user.gmail, 'name': user.name, 'is_admin': user.is_admin}), 200
+    
+    req_json = request.get_json()
+    data = {
+        'name': req_json.get('name', user.name),
+        'gmail': req_json.get('gmail', user.gmail),
+        'password': req_json.get('password')
+    }
+    hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8') if data.get('password') else user.password
+    user.name = data['name']
+    user.gmail = data['gmail']
+    user.password = hashed_password
+    logger.info(f'User {user.id} was updated with data name: {user.name}, gmail: {user.gmail}')
+
+    try:
+        db.session.commit()
+        return jsonify({'message': 'User update success'}), 200
+    except Exception as ex:
+        logger.error(str(ex))
+        db.session.rollback()
+        return jsonify({'message': 'Error occurred while updating'}), 400
