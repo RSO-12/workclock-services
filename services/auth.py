@@ -183,7 +183,7 @@ def get_all(_):
         }
     }
 })
-def remove_user():
+def remove_user(_):
     data = request.get_json()
     user_id = data.get('user_id')
 
