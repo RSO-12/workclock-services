@@ -45,7 +45,11 @@ def register(user_id):
     try:
         db.session.add(new_user)
         db.session.commit()
-        # send_email(gmail, 'Welcome to WorkClock', f'Hi {gmail},\n\nWelcome to WorkClock!\nYour password is {password}\n\nRegards,\nWorkClock team')
+        send_email(
+            gmail,
+            'Welcome to WorkClock',
+            f'Hi {gmail},\n\nWelcome to WorkClock!\nYour password is {password}\n\nRegards,\nWorkClock team'
+        )
         return jsonify({'message': 'User registered successfully'}), 201
     except IntegrityError:
         db.session.rollback()

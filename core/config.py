@@ -10,8 +10,8 @@ DB_NAME = os.environ.get('DB_NAME', 'workclock-db')
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default_value')
 
 # mailer config
-SMTP_HOST = os.environ.get('SMTP_HOST', 'smtp.freesmtpservers.com')
-SMTP_SENDER = os.environ.get('SMTP_SENDER', 'workclock@no-reply.com')
+SMTP_SENDER = os.environ.get('SMTP_SENDER', '')
+SMTP_PASSWORD = os.environ.get('SMTP_PASSWORD', '')
 
 # is dev
 IS_DEV = os.environ.get('IS_DEV', False)
